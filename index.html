@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Foxtrot Jellyfish — Open-source agentic systems</title>
+  <meta name="description" content="Protocols, engines, and patterns for AI-augmented knowledge work. Platform agnostic. Open source. Built to outlast the tools.">
+  <meta property="og:title" content="Foxtrot Jellyfish">
+  <meta property="og:description" content="Open-source agentic systems engineering. Portable protocols, pluggable engines, and the conviction that your knowledge work should survive every tool migration.">
+  <meta property="og:type" content="website">
+  <style>
+    :root {
+      --bg: #080b10;
+      --surface: #0e1219;
+      --border: #1a1f2e;
+      --text: #d8dce6;
+      --text-dim: #6b7394;
+      --accent: #3dd8c5;
+      --accent-glow: rgba(61, 216, 197, 0.12);
+      --accent-dim: #2a9e8f;
+      --warm: #e8a44a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .drift {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0;
+      animation: drift var(--duration) ease-in-out infinite;
+      animation-delay: var(--delay);
+      filter: blur(1px);
+    }
+
+    @keyframes drift {
+      0% { opacity: 0; transform: translateY(0) translateX(0); }
+      30% { opacity: var(--max-opacity); }
+      70% { opacity: var(--max-opacity); }
+      100% { opacity: 0; transform: translateY(var(--drift-y)) translateX(var(--drift-x)); }
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      padding: 100px 0 48px;
+      text-align: center;
+    }
+
+    .brand-mark {
+      font-size: 0.72rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 4.5vw, 2.8rem);
+      font-weight: 300;
+      letter-spacing: 0.03em;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .tagline {
+      font-size: clamp(0.95rem, 2.2vw, 1.1rem);
+      color: var(--text-dim);
+      font-weight: 300;
+      max-width: 600px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .cta {
+      display: inline-block;
+      padding: 11px 26px;
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .cta:hover {
+      background: var(--accent);
+      color: var(--bg);
+      text-decoration: none;
+    }
+
+    .cta-secondary {
+      border-color: var(--border);
+      color: var(--text-dim);
+    }
+
+    .cta-secondary:hover {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    .thesis {
+      text-align: center;
+      padding: 40px 24px;
+      margin: 40px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .thesis p {
+      font-size: clamp(0.92rem, 2vw, 1.05rem);
+      color: var(--text-dim);
+      font-style: italic;
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .thesis code {
+      color: var(--accent);
+      font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+      font-style: normal;
+      font-size: 0.9em;
+    }
+
+    .section {
+      margin: 60px 0;
+    }
+
+    .section h2 {
+      font-size: 0.92rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .section p.lead {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.92rem;
+      max-width: 620px;
+      margin: 0 auto 24px;
+      line-height: 1.65;
+    }
+
+    .protocols {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin: 28px 0;
+    }
+
+    @media (min-width: 640px) {
+      .protocols { grid-template-columns: 1fr 1fr; }
+    }
+
+    .protocol {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .protocol:hover {
+      border-color: var(--accent-dim);
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+
+    .protocol h4 {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 5px;
+      letter-spacing: 0.02em;
+    }
+
+    .protocol h4 .num {
+      color: var(--accent-dim);
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.78rem;
+      margin-right: 6px;
+    }
+
+    .protocol p {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    .pillars {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    @media (min-width: 720px) {
+      .pillars { grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    .pillar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .pillar:hover {
+      border-color: var(--accent-dim);
+      box-shadow: 0 0 28px var(--accent-glow);
+    }
+
+    .pillar .icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .pillar h3 {
+      font-size: 0.88rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .pillar p {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+    }
+
+    .bets {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 24px 0;
+    }
+
+    .bet {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      letter-spacing: 0.03em;
+    }
+
+    .repos {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin: 28px 0;
+    }
+
+    @media (min-width: 640px) {
+      .repos { grid-template-columns: 1fr 1fr; }
+    }
+
+    .repo {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      display: block;
+    }
+
+    .repo:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .repo .repo-name {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.88rem;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .repo .repo-desc {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+      margin-bottom: 10px;
+    }
+
+    .repo .repo-meta {
+      font-size: 0.72rem;
+      color: #4a5070;
+      letter-spacing: 0.02em;
+    }
+
+    .handshake-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      margin: 28px 0;
+    }
+
+    .handshake-block h3 {
+      font-size: 0.92rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .handshake-points {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    @media (min-width: 540px) {
+      .handshake-points { grid-template-columns: 1fr 1fr; }
+    }
+
+    .handshake-points p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.55;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .handshake-points p::before {
+      content: '\2192';
+      position: absolute;
+      left: 0;
+      color: var(--accent-dim);
+    }
+
+    .consulting {
+      text-align: center;
+      padding: 40px 24px;
+      margin: 48px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .consulting h2 {
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 14px;
+    }
+
+    .consulting p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      max-width: 540px;
+      margin: 0 auto 24px;
+      line-height: 1.65;
+    }
+
+    footer {
+      text-align: center;
+      padding: 60px 0 48px;
+      border-top: 1px solid var(--border);
+    }
+
+    footer p {
+      color: var(--text-dim);
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .ts-line {
+      font-size: 0.78rem;
+      color: #4a5070;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="drift" id="drift"></div>
+
+  <div class="content">
+    <header>
+      <p class="brand-mark">Foxtrot Jellyfish</p>
+      <h1>Protocols for <em>agentic</em> knowledge work</h1>
+      <p class="tagline">Open-source specifications and engines for AI systems that accumulate, coordinate, and survive tool migrations. Platform agnostic. Markdown native. Built to compound.</p>
+      <div class="cta-row">
+        <a href="https://github.com/foxtrotjellyfish" class="cta">GitHub</a>
+        <a href="mailto:foxtrotjellyfish@gmail.com" class="cta cta-secondary">Get in touch</a>
+      </div>
+    </header>
+
+    <div class="thesis">
+      <p>The hard problems in AI-augmented work aren't model quality. They're <code>state</code>, <code>continuity</code>, and <code>coordination</code>. We write the protocols so your knowledge survives every platform shift, every model upgrade, every context window.</p>
+    </div>
+
+    <div class="section">
+      <h2>What we believe</h2>
+      <div class="pillars">
+        <div class="pillar">
+          <span class="icon" aria-hidden="true">&#x1F4DC;</span>
+          <h3>Protocols before products</h3>
+          <p>Durable rules written in plain markdown. No SDK lock-in, no proprietary formats. If the protocol is right, the tooling writes itself.</p>
+        </div>
+        <div class="pillar">
+          <span class="icon" aria-hidden="true">&#x1F50C;</span>
+          <h3>Plug-and-play everything</h3>
+          <p>Swap your LLM provider, your IDE, your orchestration layer. Anthropic, OpenAI, Ollama, Gemini&mdash;the adapter is an implementation detail, not an identity.</p>
+        </div>
+        <div class="pillar">
+          <span class="icon" aria-hidden="true">&#x1F310;</span>
+          <h3>Your files, your machines</h3>
+          <p>Git repos, markdown files, local-first. No call-home telemetry, no cloud dependency. Air-gapped and sovereign when your threat model requires it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>The bets we're placing</h2>
+      <p class="lead">Convictions that shape every design decision. Not ideology&mdash;lessons from a year of building agentic systems in production, daily.</p>
+      <div class="bets">
+        <span class="bet">Platform agnostic</span>
+        <span class="bet">Universal adapter layers</span>
+        <span class="bet">Markdown as the interchange format</span>
+        <span class="bet">Micro-chats over mega-context</span>
+        <span class="bet">Agents as isolated processes</span>
+        <span class="bet">Git as the memory bus</span>
+        <span class="bet">Append-only accumulation</span>
+        <span class="bet">Privacy-preserving federation</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>The Substrate</h2>
+      <p class="lead">Eight protocols that define how AI-augmented knowledge workspaces should behave. No code. No runtime. No dependencies. Think POSIX for knowledge work, or the Twelve-Factor App for AI agents.</p>
+      <div class="protocols">
+        <div class="protocol">
+          <h4><span class="num">01</span> Accumulation</h4>
+          <p>Content is append-only and irreplaceable. Never overwrite history&mdash;the value is in the accumulation.</p>
+        </div>
+        <div class="protocol">
+          <h4><span class="num">02</span> Session Continuity</h4>
+          <p>Every session produces a resumable handoff. Continuity lives in files, not in model memory.</p>
+        </div>
+        <div class="protocol">
+          <h4><span class="num">03</span> Progressive Disclosure</h4>
+          <p>Navigate, don't load. Layers of increasing detail so context stays lean and agents stay fast.</p>
+        </div>
+        <div class="protocol">
+          <h4><span class="num">04</span> Agent Isolation</h4>
+          <p>Specialized work in isolated contexts with clear scope boundaries. One agent, one domain, one concern.</p>
+        </div>
+        <div class="protocol">
+          <h4><span class="num">05</span> Learning Extraction</h4>
+          <p>Experience becomes classified, reusable knowledge. The system teaches itself what matters.</p>
+        </div>
+        <div class="protocol">
+          <h4><span class="num">06</span> Context Pressure</h4>
+          <p>Preserve state before the context window fills. Graceful degradation, not catastrophic amnesia.</p>
+        </div>
+        <div class="protocol">
+          <h4><span class="num">07</span> Temporal Anchoring</h4>
+          <p>Every entry has a when and a where. Timestamps and spatial context are non-negotiable metadata.</p>
+        </div>
+        <div class="protocol">
+          <h4><span class="num">08</span> Feedback Loop</h4>
+          <p>The system teaches itself what it cares about. Unsorted signal incubates into new categories organically.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>The Cortex</h2>
+      <p class="lead">A reference implementation: a self-hosted Elixir/OTP orchestration engine that enforces Substrate protocols at runtime. Closer to an OS than a framework.</p>
+      <div class="repos">
+        <a href="https://github.com/foxtrotjellyfish/the-substrate" class="repo">
+          <span class="repo-name">foxtrotjellyfish/the-substrate</span>
+          <span class="repo-desc">The portable DNA of a Knowledge Workspace Framework. Eight protocols, pure markdown. Implement them in any tool, any language, any workflow.</span>
+          <span class="repo-meta">Markdown &middot; MIT &middot; v0.1.0-alpha</span>
+        </a>
+        <a href="https://github.com/foxtrotjellyfish/the-cortex" class="repo">
+          <span class="repo-name">foxtrotjellyfish/the-cortex</span>
+          <span class="repo-desc">Self-hosted orchestration engine. Domain agents as OTP GenServers, PubSub signal bus, pluggable LLM adapters, micro-transaction architecture.</span>
+          <span class="repo-meta">Elixir &middot; Phoenix &middot; v0.1.0-alpha</span>
+        </a>
+      </div>
+      <p class="lead" style="margin-top: 24px;">The Cortex is one possible engine. You don't need it. The Substrate works just as well inside a <code>.cursorrules</code> file, a <code>CLAUDE.md</code>, a set of shell scripts, or a napkin.</p>
+    </div>
+
+    <div class="section">
+      <h2>Device &amp; instance coordination</h2>
+      <p class="lead">One human, many machines, many organizations, many legal entities. The emerging protocol for how sovereign AI systems share signal without merging secrets.</p>
+      <div class="handshake-block">
+        <h3>The handshake problem</h3>
+        <div class="handshake-points">
+          <p>Same person, different machines&mdash;laptop, tower, phone, work device</p>
+          <p>Same person, different organizations&mdash;personal projects vs. employer</p>
+          <p>Clearance-aware exchange&mdash;share what's safe, redact what isn't</p>
+          <p>Transport-agnostic&mdash;git, email, API, shared repo, whatever works</p>
+          <p>Ephemeral by default&mdash;signals don't persist in the transport layer</p>
+          <p>No cloud dependency&mdash;air-gapped instances can still participate</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>How we work</h2>
+      <p class="lead">This isn't theoretical. These protocols emerged from a year of daily agentic systems engineering&mdash;hundreds of sessions, thousands of voice captures, dozens of agent roles, across multiple machines and contexts.</p>
+      <div class="pillars">
+        <div class="pillar">
+          <span class="icon" aria-hidden="true">&#x1F5C2;</span>
+          <h3>Markdown all the way down</h3>
+          <p>Agent roles, workspace rules, session handoffs, protocol specs. If it can be expressed as a markdown file, it should be. Portable. Diffable. Human-readable.</p>
+        </div>
+        <div class="pillar">
+          <span class="icon" aria-hidden="true">&#x1F500;</span>
+          <h3>Lean context, tight scope</h3>
+          <p>Micro-chats over mega-context windows. Each session is small, focused, and produces a durable artifact. The workspace remembers so the agent doesn't have to.</p>
+        </div>
+        <div class="pillar">
+          <span class="icon" aria-hidden="true">&#x1F331;</span>
+          <h3>Organic domain growth</h3>
+          <p>Start with one agent. As patterns cluster, new domains crystallize. The system teaches itself what it cares about through the feedback loop.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="consulting">
+      <h2>Systems consulting</h2>
+      <p>Building an agentic workflow? Evaluating orchestration patterns? Trying to make your AI systems survive the next platform shift? Let's talk.</p>
+      <div class="cta-row">
+        <a href="mailto:foxtrotjellyfish@gmail.com" class="cta">foxtrotjellyfish@gmail.com</a>
+        <a href="https://github.com/foxtrotjellyfish" class="cta cta-secondary">GitHub</a>
+      </div>
+    </div>
+
+    <footer>
+      <p>Open source. Minneapolis, MN. April 2026.</p>
+      <p>
+        <a href="https://github.com/foxtrotjellyfish/the-substrate">The Substrate</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://github.com/foxtrotjellyfish/the-cortex">The Cortex</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://github.com/foxtrotjellyfish/foxtrotjellyfish.github.io">This site</a>
+      </p>
+      <p class="ts-line">The temporal-geospatial engine is <a href="https://turningskylabs.com">Turning Sky Labs</a>&mdash;built on these protocols.</p>
+      <p style="margin-top: 20px; font-size: 0.72rem; color: #3d4260;">&copy; Foxtrot Jellyfish &middot; 2026</p>
+    </footer>
+  </div>
+
+  <script>
+    const container = document.getElementById('drift');
+    for (let i = 0; i < 60; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.top = Math.random() * 100 + '%';
+      const size = 2 + Math.random() * 4;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.setProperty('--duration', (8 + Math.random() * 16) + 's');
+      p.style.setProperty('--delay', (Math.random() * 10) + 's');
+      p.style.setProperty('--max-opacity', (0.06 + Math.random() * 0.14).toFixed(2));
+      p.style.setProperty('--drift-y', (-20 + Math.random() * 40) + 'px');
+      p.style.setProperty('--drift-x', (-15 + Math.random() * 30) + 'px');
+      if (Math.random() > 0.7) {
+        p.style.background = '#e8a44a';
+      }
+      container.appendChild(p);
+    }
+  </script>
+</body>
+</html>
