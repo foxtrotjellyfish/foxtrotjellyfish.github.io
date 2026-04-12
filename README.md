@@ -1,6 +1,8 @@
 # foxtrotjellyfish.github.io
 
-Public splash page for [Foxtrot Jellyfish](https://github.com/foxtrotjellyfish) — open-source agentic systems engineering.
+Public splash page for [Foxtrot Jellyfish](https://foxtrotjellyfish.com) — open-source agentic systems engineering.
+
+Live at **[foxtrotjellyfish.com](https://foxtrotjellyfish.com)**.
 
 ## What's here
 
@@ -13,7 +15,7 @@ Static `index.html` served via GitHub Pages. No build step, no framework, no dep
 
 ## Deployment
 
-Push to `main` on this repo. GitHub Pages serves from root.
+Push to `main` on this repo. GitHub Pages serves from root at foxtrotjellyfish.com.
 
 ## License
 
